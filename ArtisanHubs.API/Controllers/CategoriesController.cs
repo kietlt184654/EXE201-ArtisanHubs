@@ -31,8 +31,22 @@ namespace ArtisanHubs.API.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [HttpGet("parents")]
+        public async Task<IActionResult> GetParentCategories()
+        {
+            var result = await _categoryService.GetParentCategoriesAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("{parentId}/children")]
+        public async Task<IActionResult> GetChildCategories(int parentId)
+        {
+            var result = await _categoryService.GetChildCategoriesAsync(parentId);
+            return Ok(result);
+        }
+
         [HttpPost]
-        [Authorize(Roles = "Admin")] // <-- Chỉ Admin được tạo
+        //[Authorize(Roles = "Admin")] // <-- Chỉ Admin được tạo
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryRequest request)
         {
             var result = await _categoryService.CreateCategoryAsync(request);
@@ -40,7 +54,7 @@ namespace ArtisanHubs.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")] // <-- Chỉ Admin được sửa
+        //[Authorize(Roles = "Admin")] // <-- Chỉ Admin được sửa
         public async Task<IActionResult> UpdateCategory(int id, [FromBody] UpdateCategoryRequest request)
         {
             var result = await _categoryService.UpdateCategoryAsync(id, request);
@@ -48,7 +62,7 @@ namespace ArtisanHubs.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")] // <-- Chỉ Admin được xóa
+        //[Authorize(Roles = "Admin")] // <-- Chỉ Admin được xóa
         public async Task<IActionResult> DeleteCategory(int id)
         {
             var result = await _categoryService.DeleteCategoryAsync(id);
