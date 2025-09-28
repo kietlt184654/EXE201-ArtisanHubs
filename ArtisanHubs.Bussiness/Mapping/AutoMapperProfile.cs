@@ -23,7 +23,8 @@ namespace ArtisanHubs.Bussiness.Mapping
             // AccountRequest -> Account
             CreateMap<AccountRequest, Account>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => "Active")) // default
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
+                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()); ;
 
             CreateMap<Artistprofile, ArtistProfileResponse>();
             CreateMap<ArtistProfileRequest, Artistprofile>();
@@ -42,4 +43,4 @@ namespace ArtisanHubs.Bussiness.Mapping
                           opt => opt.MapFrom(src => src.Category != null ? src.Category.Description : null));
         }
     }
-}
+}   
