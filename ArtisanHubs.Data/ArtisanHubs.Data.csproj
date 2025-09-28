@@ -9,8 +9,6 @@
   <ItemGroup>
     <Folder Include="Repositories\Order\Implements\" />
     <Folder Include="Repositories\Order\Interfaces\" />
-    <Folder Include="Repositories\Product\Implements\" />
-    <Folder Include="Repositories\Product\Interfaces\" />
   </ItemGroup>
 
   <ItemGroup>

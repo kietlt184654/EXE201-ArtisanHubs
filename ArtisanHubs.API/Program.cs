@@ -22,6 +22,10 @@ using ArtisanHubs.Bussiness.Services.Categories.Implements;
 using ArtisanHubs.Bussiness.Services.Categories.Interfaces;
 using ArtisanHubs.Data.Repositories.Categories.Implements;
 using ArtisanHubs.Data.Repositories.Categories.Interfaces;
+using ArtisanHubs.Data.Repositories.Products.Interfaces;
+using ArtisanHubs.Data.Repositories.Products.Implements;
+using ArtisanHubs.Bussiness.Services.Products.Interfaces;
+using ArtisanHubs.Bussiness.Services.Products.Implements;
 namespace ArtisanHubs.API
 {
     public class Program
@@ -46,6 +50,9 @@ namespace ArtisanHubs.API
 
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
+
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<IProductService, ProductService>();
 
             builder.Services.AddScoped<ITokenService, TokenService>();
 
