@@ -107,10 +107,14 @@ namespace ArtisanHubs.Bussiness.Services.Accounts.Implements
         {
             try
             {
+                if (request.Role != "Customer" && request.Role != "Artist")
+                {
+                    return ApiResponse<AccountResponse>.FailResponse("Invalid role specified. Must be 'Customer' or 'Artist'.", 400); // 400 Bad Request
+                }
                 var entity = _mapper.Map<Account>(request);
                 entity.CreatedAt = DateTime.UtcNow;
                 entity.Status = "Active";
-
+               
                 // Hash password trước khi lưu
                 entity.PasswordHash = _passwordHasher.HashPassword(entity, request.Password);
 

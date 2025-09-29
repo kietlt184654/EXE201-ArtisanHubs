@@ -1,10 +1,13 @@
 ﻿using ArtisanHubs.Bussiness.Services.Products.Interfaces;
 using ArtisanHubs.Data.Repositories.ArtistProfiles.Interfaces;
 using ArtisanHubs.DTOs.DTO.Request.Products;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ArtisanHubs.API.Controllers
 {
+    [Authorize(Roles = "Artist")]
     [Route("api/my-products")]
     [ApiController]
     public class ProductController : ControllerBase
@@ -18,82 +21,83 @@ namespace ArtisanHubs.API.Controllers
             _artistProfileRepo = artistProfileRepo;
         }
 
-        // Helper để lấy ArtistId
-        private async Task<int?> GetCurrentArtistId()
+        // ✅ HÀM HELPER MỚI: Chỉ lấy AccountId từ token
+        private int GetCurrentAccountId()
         {
-#if DEBUG
-            // --- DÀNH CHO MÔI TRƯỜNG TEST ---
-            // Giả lập nghệ nhân có ArtistId = 1 đang đăng nhập.
-            // Đảm bảo trong DB có ArtistProfile với ArtistId = 1.
-            return 1;
-#else
-            // --- DÀNH CHO MÔI TRƯỜNG PRODUCTION ---
             var accountIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(accountIdString) || !int.TryParse(accountIdString, out int accountId))
+            if (string.IsNullOrEmpty(accountIdString))
             {
-                return null;
+                throw new InvalidOperationException("Claim 'NameIdentifier' (Account ID) not found in token.");
             }
-
-            var artistProfile = await _artistProfileRepo.GetProfileByAccountIdAsync(accountId);
-            return artistProfile?.ArtistId;
-#endif
+            if (!int.TryParse(accountIdString, out var accountId))
+            {
+                throw new InvalidOperationException("Claim 'NameIdentifier' in token is not a valid integer.");
+            }
+            return accountId;
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateProduct([FromBody] CreateProductRequest request)
         {
-            var artistId = await GetCurrentArtistId();
-            if (artistId == null)
+            // Bước 1: Lấy AccountId từ token
+            var accountId = GetCurrentAccountId();
+
+            // Bước 2: Dùng AccountId để lấy thông tin ArtistProfile
+            var artistProfile = await _artistProfileRepo.GetProfileByAccountIdAsync(accountId);
+            if (artistProfile == null)
             {
-                // Trong môi trường test, lỗi này sẽ không xảy ra trừ khi bạn trả về null
-                return Unauthorized("Artist profile not found.");
+                return Unauthorized("Artist profile not found for this account.");
             }
 
-            var result = await _productService.CreateProductAsync(artistId.Value, request);
+            // Bước 3: Gọi service với ArtistId
+            var result = await _productService.CreateProductAsync(artistProfile.ArtistId, request);
             return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("{productId}")]
         public async Task<IActionResult> GetMyProductById(int productId)
         {
-            var artistId = await GetCurrentArtistId();
-            if (artistId == null) return Unauthorized("Artist profile not found.");
-            var result = await _productService.GetMyProductByIdAsync(productId, artistId.Value);
+            var accountId = GetCurrentAccountId();
+            var artistProfile = await _artistProfileRepo.GetProfileByAccountIdAsync(accountId);
+            if (artistProfile == null) return Unauthorized("Artist profile not found for this account.");
+
+            var result = await _productService.GetMyProductByIdAsync(productId, artistProfile.ArtistId);
             return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetMyProducts()
         {
-            // 1. Lấy ID của nghệ nhân đang đăng nhập
-            var artistId = await GetCurrentArtistId();
-            if (artistId == null)
+            var accountId = GetCurrentAccountId();
+            var artistProfile = await _artistProfileRepo.GetProfileByAccountIdAsync(accountId);
+            if (artistProfile == null)
             {
                 return Unauthorized("Artist profile not found for this account.");
             }
 
-            // 2. Gọi đến service để lấy danh sách sản phẩm
-            var result = await _productService.GetMyProductsAsync(artistId.Value);
-
-            // 3. Trả kết quả về cho client
+            var result = await _productService.GetMyProductsAsync(artistProfile.ArtistId);
             return StatusCode(result.StatusCode, result);
         }
 
         [HttpPut("{productId}")]
         public async Task<IActionResult> UpdateProduct(int productId, [FromBody] UpdateProductRequest request)
         {
-            var artistId = await GetCurrentArtistId();
-            if (artistId == null) return Unauthorized("Artist profile not found.");
-            var result = await _productService.UpdateProductAsync(productId, artistId.Value, request);
+            var accountId = GetCurrentAccountId();
+            var artistProfile = await _artistProfileRepo.GetProfileByAccountIdAsync(accountId);
+            if (artistProfile == null) return Unauthorized("Artist profile not found for this account.");
+
+            var result = await _productService.UpdateProductAsync(productId, artistProfile.ArtistId, request);
             return StatusCode(result.StatusCode, result);
         }
 
         [HttpDelete("{productId}")]
         public async Task<IActionResult> DeleteProduct(int productId)
         {
-            var artistId = await GetCurrentArtistId();
-            if (artistId == null) return Unauthorized("Artist profile not found.");
-            var result = await _productService.DeleteProductAsync(productId, artistId.Value);
+            var accountId = GetCurrentAccountId();
+            var artistProfile = await _artistProfileRepo.GetProfileByAccountIdAsync(accountId);
+            if (artistProfile == null) return Unauthorized("Artist profile not found for this account.");
+
+            var result = await _productService.DeleteProductAsync(productId, artistProfile.ArtistId);
             return StatusCode(result.StatusCode, result);
         }
     }
