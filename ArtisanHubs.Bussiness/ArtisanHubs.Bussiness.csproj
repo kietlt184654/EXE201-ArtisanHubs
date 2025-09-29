@@ -14,8 +14,6 @@
   <ItemGroup>
     <Folder Include="Services\Order\Implements\" />
     <Folder Include="Services\Order\Interfaces\" />
-    <Folder Include="Services\Product\Implements\" />
-    <Folder Include="Services\Product\Interfaces\" />
   </ItemGroup>
 
   <ItemGroup>

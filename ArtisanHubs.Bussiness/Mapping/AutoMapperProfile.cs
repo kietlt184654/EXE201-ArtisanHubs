@@ -1,9 +1,11 @@
 ﻿using ArtisanHubs.Data.Entities;
 using ArtisanHubs.DTOs.DTO.Reponse.ArtistProfile;
 using ArtisanHubs.DTOs.DTO.Reponse.Categories;
+using ArtisanHubs.DTOs.DTO.Reponse.Products;
 using ArtisanHubs.DTOs.DTO.Reponse.WorkshopPackages;
 using ArtisanHubs.DTOs.DTO.Request.ArtistProfile;
 using ArtisanHubs.DTOs.DTO.Request.Categories;
+using ArtisanHubs.DTOs.DTO.Request.Products;
 using ArtisanHubs.DTOs.DTO.Request.WorkshopPackages;
 using ArtisanHubs.DTOs.DTOs.Reponse;
 using ArtisanHubs.DTOs.DTOs.Request.Accounts;
@@ -21,7 +23,8 @@ namespace ArtisanHubs.Bussiness.Mapping
             // AccountRequest -> Account
             CreateMap<AccountRequest, Account>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => "Active")) // default
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
+                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()); ;
 
             CreateMap<Artistprofile, ArtistProfileResponse>();
             CreateMap<ArtistProfileRequest, Artistprofile>();
@@ -32,6 +35,12 @@ namespace ArtisanHubs.Bussiness.Mapping
             CreateMap<CreateCategoryRequest, Category>();
             CreateMap<UpdateCategoryRequest, Category>();
             CreateMap<Category, CategoryResponse>();
+
+            CreateMap<CreateProductRequest, Product>();
+            CreateMap<UpdateProductRequest, Product>();
+            CreateMap<Product, ProductResponse>()
+               .ForMember(dest => dest.CategoryName,
+                          opt => opt.MapFrom(src => src.Category != null ? src.Category.Description : null));
         }
     }
-}
+}   

@@ -39,6 +39,35 @@ namespace ArtisanHubs.Bussiness.Services.Categories.Implements
             }
         }
 
+        public async Task<ApiResponse<IEnumerable<CategoryResponse>>> GetParentCategoriesAsync()
+        {
+            try
+            {
+                var parentCategories = await _categoryRepo.GetByConditionAsync(c => c.ParentId == null);
+                var response = _mapper.Map<IEnumerable<CategoryResponse>>(parentCategories);
+                return ApiResponse<IEnumerable<CategoryResponse>>.SuccessResponse(response);
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<IEnumerable<CategoryResponse>>.FailResponse($"An unexpected error occurred: {ex.Message}", 500);
+            }
+        }
+
+        public async Task<ApiResponse<IEnumerable<CategoryResponse>>> GetChildCategoriesAsync(int parentId)
+        {
+            try
+            {
+                var childCategories = await _categoryRepo.GetByConditionAsync(c => c.ParentId == parentId);
+                var response = _mapper.Map<IEnumerable<CategoryResponse>>(childCategories);
+                return ApiResponse<IEnumerable<CategoryResponse>>.SuccessResponse(response);
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<IEnumerable<CategoryResponse>>.FailResponse($"An unexpected error occurred: {ex.Message}", 500);
+            }
+        }
+
+
         public async Task<ApiResponse<CategoryResponse?>> GetCategoryByIdAsync(int categoryId)
         {
             try
@@ -111,6 +140,13 @@ namespace ArtisanHubs.Bussiness.Services.Categories.Implements
                 {
                     return ApiResponse<bool>.FailResponse("Category not found.", 404);
                 }
+
+                var hasChildren = await _categoryRepo.ExistAsync(c => c.ParentId == categoryId);
+                if (hasChildren)
+                {
+                    return ApiResponse<bool>.FailResponse("Cannot delete category because it has child categories.", 400);
+                }
+
 
                 await _categoryRepo.RemoveAsync(categoryToDelete);
                 return ApiResponse<bool>.SuccessResponse(true, "Category deleted successfully.");
