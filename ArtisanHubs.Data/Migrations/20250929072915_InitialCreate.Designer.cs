@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ArtisanHubs.Data.Migrations
 {
     [DbContext(typeof(ArtisanHubsDbContext))]
-    [Migration("20250925063249_AddPasswordHashColumn")]
-    partial class AddPasswordHashColumn
+    [Migration("20250929072915_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -66,7 +66,8 @@ namespace ArtisanHubs.Data.Migrations
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("password_hash");
 
                     b.Property<string>("Phone")
                         .HasMaxLength(20)

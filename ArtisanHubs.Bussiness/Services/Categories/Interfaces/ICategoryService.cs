@@ -16,5 +16,7 @@ namespace ArtisanHubs.Bussiness.Services.Categories.Interfaces
         Task<ApiResponse<CategoryResponse>> CreateCategoryAsync(CreateCategoryRequest request);
         Task<ApiResponse<CategoryResponse?>> UpdateCategoryAsync(int categoryId, UpdateCategoryRequest request);
         Task<ApiResponse<bool>> DeleteCategoryAsync(int categoryId);
+        Task<ApiResponse<IEnumerable<CategoryResponse>>> GetParentCategoriesAsync();
+        Task<ApiResponse<IEnumerable<CategoryResponse>>> GetChildCategoriesAsync(int parentId);
     }
 }
