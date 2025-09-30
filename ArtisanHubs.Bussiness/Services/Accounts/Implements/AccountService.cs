@@ -24,13 +24,20 @@ namespace ArtisanHubs.Bussiness.Services.Accounts.Implements
         private readonly IMapper _mapper;
         private readonly ITokenService _tokenService;
         private readonly IPasswordHasher<Account> _passwordHasher;
+        private readonly PhotoService _photoService;
 
-        public AccountService(IAccountRepository repo, IMapper mapper, ITokenService tokenService, IPasswordHasher<Account> passwordHasher)
+        public AccountService(
+            IAccountRepository repo,
+            IMapper mapper,
+            ITokenService tokenService,
+            IPasswordHasher<Account> passwordHasher,
+            PhotoService photoService)
         {
             _repo = repo;
             _mapper = mapper;
             _tokenService = tokenService;
             _passwordHasher = passwordHasher;
+            _photoService = photoService;
         }
 
         public async Task<ApiResponse<LoginResponse?>> LoginAsync(LoginRequest request)
@@ -103,20 +110,26 @@ namespace ArtisanHubs.Bussiness.Services.Accounts.Implements
         }
 
         // Tạo mới Account
-        public async Task<ApiResponse<AccountResponse>> CreateAsync(AccountRequest request)
+        public async Task<ApiResponse<AccountResponse>> CreateAsync(AccountRequest request, string? avatarUrl = null)
         {
             try
             {
                 if (request.Role != "Customer" && request.Role != "Artist")
                 {
-                    return ApiResponse<AccountResponse>.FailResponse("Invalid role specified. Must be 'Customer' or 'Artist'.", 400); // 400 Bad Request
+                    return ApiResponse<AccountResponse>.FailResponse(
+                        "Invalid role specified. Must be 'Customer' or 'Artist'.", 400
+                    );
                 }
+
                 var entity = _mapper.Map<Account>(request);
                 entity.CreatedAt = DateTime.UtcNow;
                 entity.Status = "Active";
-               
-                // Hash password trước khi lưu
                 entity.PasswordHash = _passwordHasher.HashPassword(entity, request.Password);
+
+                if (!string.IsNullOrEmpty(avatarUrl))
+                {
+                    entity.Avatar = avatarUrl;
+                }
 
                 await _repo.CreateAsync(entity);
 

@@ -12,9 +12,11 @@ namespace ArtisanHubs.API.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAccountService _accountService;
-        public AccountController(IAccountService accountService)
+        private readonly PhotoService _photoService;
+        public AccountController(IAccountService accountService, PhotoService photoService)
         {
             _accountService = accountService;
+            _photoService = photoService;
         }
 
         /// <summary>
@@ -41,11 +43,20 @@ namespace ArtisanHubs.API.Controllers
         /// Tạo mới tài khoản
         /// </summary>
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] AccountRequest request)
+        public async Task<IActionResult> Create([FromForm] AccountRequest request)
         {
-            var result = await _accountService.CreateAsync(request);
+            // Upload ảnh nếu có
+            string? avatarUrl = null;
+            if (request.AvatarFile != null)
+            {
+                avatarUrl = await _photoService.UploadImageAsync(request.AvatarFile);
+                request.AvatarFile = null;
+            }
+
+            var result = await _accountService.CreateAsync(request, avatarUrl);
             return StatusCode(result.StatusCode, result);
         }
+
 
         /// <summary>
         /// Cập nhật tài khoản

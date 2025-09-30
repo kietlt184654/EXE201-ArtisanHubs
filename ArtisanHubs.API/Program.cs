@@ -28,6 +28,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using CloudinaryDotNet;
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
@@ -54,11 +55,22 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
 
-builder.Services.AddScoped<IPasswordHasher<Account>, PasswordHasher<Account>>();
+builder.Services.AddScoped<IPasswordHasher<ArtisanHubs.Data.Entities.Account>, PasswordHasher<ArtisanHubs.Data.Entities.Account>>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+
+builder.Services.AddScoped<PhotoService>();
 
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
+
+var cloudName = configuration["CloudinarySettings:CloudName"];
+var apiKey = configuration["CloudinarySettings:ApiKey"];
+var apiSecret = configuration["CloudinarySettings:ApiSecret"];
+
+var account = new CloudinaryDotNet.Account(cloudName, apiKey, apiSecret);
+var cloudinary = new Cloudinary(account);
+
+builder.Services.AddSingleton(cloudinary);
 
 builder.Services.AddCors(options =>
 {
