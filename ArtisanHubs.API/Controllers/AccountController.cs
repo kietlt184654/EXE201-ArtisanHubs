@@ -3,7 +3,9 @@ using ArtisanHubs.Bussiness.Services.Accounts.Interfaces;
 using ArtisanHubs.DTOs.DTO.Request.Accounts;
 using ArtisanHubs.DTOs.DTOs.Reponse;
 using ArtisanHubs.DTOs.DTOs.Request.Accounts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ArtisanHubs.API.Controllers
 {
@@ -17,9 +19,27 @@ namespace ArtisanHubs.API.Controllers
             _accountService = accountService;
         }
 
+        private int GetCurrentAccountId()
+        {
+            // Xóa hoặc comment out toàn bộ khối #if DEBUG ... #endif
+            // Chỉ giữ lại phần code đọc ID từ token
+
+            var accountIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(accountIdString))
+            {
+                // Lỗi này xảy ra nếu token hợp lệ nhưng lại thiếu claim ID của người dùng,
+                // cho thấy có vấn đề ở khâu tạo token.
+                throw new InvalidOperationException("Account ID claim (NameIdentifier) not found in token.");
+            }
+
+            return int.Parse(accountIdString);
+        }
+
         /// <summary>
         /// Lấy danh sách tất cả tài khoản
         /// </summary>
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -30,6 +50,7 @@ namespace ArtisanHubs.API.Controllers
         /// <summary>
         /// Lấy 1 tài khoản theo id
         /// </summary>
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -50,6 +71,7 @@ namespace ArtisanHubs.API.Controllers
         /// <summary>
         /// Cập nhật tài khoản
         /// </summary>
+        [Authorize(Roles = "Customer,Artist,Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] AccountRequest request)
         {
@@ -60,6 +82,7 @@ namespace ArtisanHubs.API.Controllers
         /// <summary>
         /// Xóa tài khoản
         /// </summary>
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

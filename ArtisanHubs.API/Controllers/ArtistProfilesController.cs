@@ -1,4 +1,5 @@
-﻿using ArtisanHubs.Bussiness.Services.ArtistProfiles.Interfaces;
+﻿using ArtisanHubs.API.DTOs.Common;
+using ArtisanHubs.Bussiness.Services.ArtistProfiles.Interfaces;
 using ArtisanHubs.DTOs.DTO.Request.ArtistProfile;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -46,7 +47,6 @@ namespace ArtisanHubs.API.Controllers
 
         // POST: api/artist-profiles/me
         // Tạo profile cho chính nghệ nhân đang đăng nhập
-
         [Authorize(Roles = "Artist")]
         [HttpPost()]
         public async Task<IActionResult> CreateMyProfile([FromBody] ArtistProfileRequest request)
@@ -63,7 +63,6 @@ namespace ArtisanHubs.API.Controllers
 
         // PUT: api/artist-profiles/me
         // Cập nhật profile cho chính nghệ nhân đang đăng nhập
-
         [Authorize(Roles = "Artist")]
         [HttpPut()]
         public async Task<IActionResult> UpdateMyProfile([FromBody] ArtistProfileRequest request)
@@ -92,12 +91,19 @@ namespace ArtisanHubs.API.Controllers
 
         // Xóa một profile (chức năng này thường dành cho Admin)
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Artist")]
         public async Task<IActionResult> DeleteProfile(int id)
         {
             var result = await _artistProfileService.DeleteProfileAsync(id);
             return StatusCode(result.StatusCode, result);
         }
 
+        ////[Authorize(Roles = "Customer,Artist")]
+        //[HttpGet("artists")]
+        //public async Task<IActionResult> GetAllArtists()
+        //{
+        //    var result = await _artistProfileService.GetAllArtistsAsync();
+        //    return StatusCode(result.StatusCode, result);
+        //}
     }
 }

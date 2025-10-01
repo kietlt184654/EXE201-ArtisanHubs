@@ -1,5 +1,6 @@
 ﻿using ArtisanHubs.Data.Entities;
 using ArtisanHubs.DTOs.DTO.Reponse.ArtistProfile;
+using ArtisanHubs.DTOs.DTO.Reponse.Carts;
 using ArtisanHubs.DTOs.DTO.Reponse.Categories;
 using ArtisanHubs.DTOs.DTO.Reponse.Products;
 using ArtisanHubs.DTOs.DTO.Reponse.WorkshopPackages;
@@ -41,6 +42,18 @@ namespace ArtisanHubs.Bussiness.Mapping
             CreateMap<Product, ProductResponse>()
                .ForMember(dest => dest.CategoryName,
                           opt => opt.MapFrom(src => src.Category != null ? src.Category.Description : null));
+            CreateMap<Product, ProductForCustomerResponse>()
+            .ForMember(dest => dest.CategoryName,
+                       opt => opt.MapFrom(src => src.Category != null ? src.Category.Description : null))
+            .ForMember(dest => dest.ArtistName,
+                       opt => opt.MapFrom(src => src.Artist != null ? src.Artist.ArtistName : null));
+
+
+            CreateMap<Cart, CartResponse>();
+            CreateMap<CartItem, CartItemResponse>()
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Product.Price))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.Product.Images));
         }
     }
 }   

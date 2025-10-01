@@ -125,5 +125,22 @@ namespace ArtisanHubs.Bussiness.Services.ArtistProfiles.Implements
                 return ApiResponse<bool>.FailResponse($"Error: {ex.Message}", 500);
             }
         }
+
+        //public async Task<ApiResponse<IEnumerable<ArtistProfileResponse>>> GetAllArtistsAsync()
+        //{
+        //    try
+        //    {
+        //        var artists = await _repo.GetAllArtistsAsync();
+        //        var response = _mapper.Map<IEnumerable<ArtistProfileResponse>>(artists);
+
+        //        return ApiResponse<IEnumerable<ArtistProfileResponse>>.SuccessResponse(
+        //            response, "Get all artists successfully.");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return ApiResponse<IEnumerable<ArtistProfileResponse>>.FailResponse(
+        //            $"An error occurred: {ex.Message}", 500);
+        //    }
+        //}
     }
 }
