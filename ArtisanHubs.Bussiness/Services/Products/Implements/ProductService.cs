@@ -117,5 +117,26 @@ namespace ArtisanHubs.Bussiness.Services.Products.Implements
                 return ApiResponse<ProductResponse>.FailResponse($"An unexpected error occurred: {ex.Message}", 500);
             }
         }
+
+        public async Task<ApiResponse<ProductForCustomerResponse>> GetProductByIdForCustomerAsync(int productId)
+        {
+            try
+            {
+                var product = await _productRepo.GetProductWithDetailsAsync(productId);
+                if (product == null)
+                {
+                    return ApiResponse<ProductForCustomerResponse>.FailResponse("Product not found.", 404);
+                }
+
+                var response = _mapper.Map<ProductForCustomerResponse>(product);
+                return ApiResponse<ProductForCustomerResponse>.SuccessResponse(response, "Get product successfully.");
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<ProductForCustomerResponse>.FailResponse($"An error occurred: {ex.Message}", 500);
+            }
+        }
+
+       
     }
 }

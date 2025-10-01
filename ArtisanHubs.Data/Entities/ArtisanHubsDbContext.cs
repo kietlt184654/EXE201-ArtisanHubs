@@ -44,6 +44,8 @@ public partial class ArtisanHubsDbContext : DbContext
     public virtual DbSet<Withdrawrequest> Withdrawrequests { get; set; }
 
     public virtual DbSet<Workshoppackage> Workshoppackages { get; set; }
+    public virtual DbSet<Cart> Carts { get; set; }
+    public virtual DbSet<CartItem> CartItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -92,7 +94,31 @@ public partial class ArtisanHubsDbContext : DbContext
       .HasColumnName("password_hash")
       .HasColumnType("text");
         });
+        //---------------------------------------------------------------
+        modelBuilder.Entity<Cart>(entity =>
+        {
+            // Thiết lập mối quan hệ 1-1 giữa Account và Cart
+            entity.HasOne(c => c.Account)
+                  .WithOne() // Giả sử một Account chỉ có một Cart
+                  .HasForeignKey<Cart>(c => c.AccountId)
+                  .IsRequired();
+        });
 
+        modelBuilder.Entity<CartItem>(entity =>
+        {
+            // Mối quan hệ nhiều-1 giữa CartItem và Cart
+            entity.HasOne(ci => ci.Cart)
+                  .WithMany(c => c.CartItems)
+                  .HasForeignKey(ci => ci.CartId)
+                  .IsRequired();
+
+            // Mối quan hệ nhiều-1 giữa CartItem và Product
+            entity.HasOne(ci => ci.Product)
+                  .WithMany() // Một sản phẩm có thể ở trong nhiều CartItem
+                  .HasForeignKey(ci => ci.ProductId)
+                  .IsRequired();
+        });
+        //---------------------------------------------------------------
         modelBuilder.Entity<Artistprofile>(entity =>
         {
             entity.HasKey(e => e.ArtistId).HasName("artistprofile_pkey");

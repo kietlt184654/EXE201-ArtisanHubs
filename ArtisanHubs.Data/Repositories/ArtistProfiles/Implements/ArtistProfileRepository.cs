@@ -29,5 +29,12 @@ namespace ArtisanHubs.Data.Repositories.ArtistProfiles.Implements
             return await _context.Artistprofiles
                                  .FirstOrDefaultAsync(p => p.AccountId == accountId);
         }
+
+        //public async Task<IEnumerable<Artistprofile>> GetAllArtistsAsync()
+        //{
+        //    return await _context.Artistprofiles
+        //                         .Include(a => a.Account) // nếu muốn lấy thông tin account (username, email…)
+        //                         .ToListAsync();
+        //}
     }
 }

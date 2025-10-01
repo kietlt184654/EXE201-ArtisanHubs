@@ -16,5 +16,6 @@ namespace ArtisanHubs.Bussiness.Services.ArtistProfiles.Interfaces
         Task<ApiResponse<ArtistProfileResponse>> CreateMyProfileAsync(int accountId, ArtistProfileRequest request);
         Task<ApiResponse<IEnumerable<ArtistProfileResponse>>> GetAllProfilesAsync();
         Task<ApiResponse<bool>> DeleteProfileAsync(int id);
+        //Task<ApiResponse<IEnumerable<ArtistProfileResponse>>> GetAllArtistsAsync();
     }
 }

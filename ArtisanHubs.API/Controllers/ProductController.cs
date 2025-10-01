@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace ArtisanHubs.API.Controllers
 {
-    [Authorize(Roles = "Artist")]
+    
     [Route("api/my-products")]
     [ApiController]
     public class ProductController : ControllerBase
@@ -36,6 +36,7 @@ namespace ArtisanHubs.API.Controllers
             return accountId;
         }
 
+        [Authorize(Roles = "Artist")]
         [HttpPost]
         public async Task<IActionResult> CreateProduct([FromBody] CreateProductRequest request)
         {
@@ -54,6 +55,7 @@ namespace ArtisanHubs.API.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [Authorize(Roles = "Artist")]
         [HttpGet("{productId}")]
         public async Task<IActionResult> GetMyProductById(int productId)
         {
@@ -65,6 +67,23 @@ namespace ArtisanHubs.API.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [Authorize(Roles = "Customer")]
+        [HttpGet("customer/{productId}")]
+        public async Task<IActionResult> GetProductByIdForCustomer(int productId)
+        {
+            var result = await _productService.GetProductByIdForCustomerAsync(productId);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [Authorize(Roles = "Artist,Customer")]
+        [HttpGet("artist/{artistId}/products")]
+        public async Task<IActionResult> GetProductsByArtist(int artistId)
+        {
+            var result = await _productService.GetMyProductsAsync(artistId);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [Authorize(Roles = "Artist")]
         [HttpGet]
         public async Task<IActionResult> GetMyProducts()
         {
@@ -79,6 +98,7 @@ namespace ArtisanHubs.API.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [Authorize(Roles = "Artist")]
         [HttpPut("{productId}")]
         public async Task<IActionResult> UpdateProduct(int productId, [FromBody] UpdateProductRequest request)
         {
@@ -90,6 +110,7 @@ namespace ArtisanHubs.API.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [Authorize(Roles = "Artist")]
         [HttpDelete("{productId}")]
         public async Task<IActionResult> DeleteProduct(int productId)
         {

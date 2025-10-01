@@ -28,6 +28,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using ArtisanHubs.Data.Repositories.Carts.Interfaces;
+using ArtisanHubs.Data.Repositories.Carts.Implements;
+using ArtisanHubs.Bussiness.Services.Carts.Interfaces;
+using ArtisanHubs.Bussiness.Services.Carts.Implements;
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
@@ -56,6 +60,9 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
+
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<ICartService, CartService>();
 
 builder.Services.AddScoped<IPasswordHasher<Account>, PasswordHasher<Account>>();
 builder.Services.AddScoped<ITokenService, TokenService>();

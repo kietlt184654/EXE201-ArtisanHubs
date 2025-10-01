@@ -107,9 +107,9 @@ namespace ArtisanHubs.Bussiness.Services.Accounts.Implements
         {
             try
             {
-                if (request.Role != "Customer" && request.Role != "Artist")
+                if (request.Role != "Customer" && request.Role != "Artist" && request.Role != "Admin")
                 {
-                    return ApiResponse<AccountResponse>.FailResponse("Invalid role specified. Must be 'Customer' or 'Artist'.", 400); // 400 Bad Request
+                    return ApiResponse<AccountResponse>.FailResponse("Invalid role specified. Must be 'Customer' or 'Artist' or 'Admin'.", 400); // 400 Bad Request
                 }
                 var entity = _mapper.Map<Account>(request);
                 entity.CreatedAt = DateTime.UtcNow;
