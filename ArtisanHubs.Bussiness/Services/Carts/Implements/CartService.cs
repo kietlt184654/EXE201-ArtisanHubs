@@ -1,6 +1,8 @@
 ﻿using ArtisanHubs.API.DTOs.Common;
+using ArtisanHubs.Bussiness.Services.ArtistProfiles.Interfaces;
 using ArtisanHubs.Bussiness.Services.Carts.Interfaces;
 using ArtisanHubs.Data.Entities;
+using ArtisanHubs.Data.Repositories.ArtistProfiles.Interfaces;
 using ArtisanHubs.Data.Repositories.Carts.Interfaces;
 using ArtisanHubs.Data.Repositories.Products.Interfaces;
 using ArtisanHubs.DTOs.DTO.Reponse.Carts;
@@ -20,39 +22,47 @@ namespace ArtisanHubs.Bussiness.Services.Carts.Implements
         private readonly ICartRepository _cartRepository;
         private readonly IMapper _mapper;
         private readonly IProductRepository _productRepository;
-        public CartService(ICartRepository cartRepository, IMapper mapper, IProductRepository productRepository)
+        private readonly IArtistProfileService _artistProfileService;
+        public CartService(ICartRepository cartRepository, IMapper mapper, IProductRepository productRepository, IArtistProfileService artistProfileService)
         {
             _cartRepository = cartRepository;
             _mapper = mapper;
             _productRepository = productRepository;
+            _artistProfileService = artistProfileService;
         }
 
-        // Thêm sản phẩm vào giỏ hàng
         public async Task<ApiResponse<CartResponse?>> AddToCartAsync(int accountId, AddToCartRequest request)
         {
             try
             {
-
                 var product = await _productRepository.GetByIdAsync(request.ProductId);
-                if (product == null)
+                if (product == null || product.Status != "Available")
                 {
-                    return ApiResponse<CartResponse?>.FailResponse("Product not found.", 404);
+                    return ApiResponse<CartResponse?>.FailResponse("Product not found or not available.", 404);
                 }
 
                 var cart = await _cartRepository.GetCartByAccountIdAsync(accountId);
 
                 if (cart == null)
                 {
-                    cart = new Cart
-                    {
-                        AccountId = accountId,
-                        CreatedAt = DateTime.UtcNow
-                    };
-
+                    cart = new Cart { AccountId = accountId };
                     await _cartRepository.CreateCartAsync(cart);
+
+                    cart = await _cartRepository.GetCartByAccountIdAsync(accountId);
                 }
 
                 var existingItem = cart.CartItems.FirstOrDefault(item => item.ProductId == request.ProductId);
+
+                int newTotalQuantity = request.Quantity;
+                if (existingItem != null)
+                {
+                    newTotalQuantity += existingItem.Quantity;
+                }
+
+                if (product.StockQuantity < newTotalQuantity)
+                {
+                    return ApiResponse<CartResponse?>.FailResponse($"Not enough stock. Only {product.StockQuantity} items available.", 400); 
+                }
 
                 if (existingItem != null)
                 {
@@ -60,10 +70,8 @@ namespace ArtisanHubs.Bussiness.Services.Carts.Implements
                 }
                 else
                 {
-
                     var newItem = new CartItem
                     {
-                        CartId = cart.Id,
                         ProductId = request.ProductId,
                         Quantity = request.Quantity,
                         AddedAt = DateTime.UtcNow
@@ -72,11 +80,13 @@ namespace ArtisanHubs.Bussiness.Services.Carts.Implements
                 }
 
                 cart.UpdatedAt = DateTime.UtcNow;
-
                 await _cartRepository.UpdateCartAsync(cart);
 
-                // Map kết quả sang DTO để trả về
-                var response = _mapper.Map<CartResponse>(cart);
+                var updatedCart = await _cartRepository.GetCartByAccountIdAsync(accountId);
+                var response = _mapper.Map<CartResponse>(updatedCart);
+
+                response.TotalPrice = response.Items.Sum(i => i.Price * i.Quantity);
+
                 return ApiResponse<CartResponse?>.SuccessResponse(response, "Product added to cart successfully.");
             }
             catch (Exception ex)
@@ -89,19 +99,32 @@ namespace ArtisanHubs.Bussiness.Services.Carts.Implements
         {
             try
             {
-                // Lấy cart từ repo
                 var cart = await _cartRepository.GetCartByAccountIdAsync(accountId);
 
                 if (cart == null)
                 {
-                    return ApiResponse<CartResponse?>.FailResponse("Cart not found.", 404);
+                    var emptyCartResponse = new CartResponse
+                    {
+                        CartId = 0,
+                        Items = new List<CartItemResponse>(),
+                        TotalPrice = 0
+                    };
+                    return ApiResponse<CartResponse?>.SuccessResponse(emptyCartResponse, "User has an empty cart.");
                 }
 
-                // Map bằng AutoMapper
                 var cartResponse = _mapper.Map<CartResponse>(cart);
 
-                // Tính tổng tiền nếu cần
-                cartResponse.TotalPrice = cartResponse.Items.Sum(i => i.Price * i.Quantity);
+                cartResponse.TotalPrice = cart.CartItems.Sum(item =>
+                (item.Product.DiscountPrice ?? item.Product.Price) * item.Quantity
+            );
+
+                foreach (var itemResponse in cartResponse.Items)
+                {
+                    var productInCart = cart.CartItems
+                                            .First(ci => ci.ProductId == itemResponse.ProductId)
+                                            .Product;
+                    itemResponse.Price = productInCart.DiscountPrice ?? productInCart.Price;
+                }
 
                 return ApiResponse<CartResponse?>.SuccessResponse(cartResponse);
             }

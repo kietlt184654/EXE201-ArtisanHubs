@@ -121,5 +121,13 @@ namespace ArtisanHubs.API.Controllers
             var result = await _productService.DeleteProductAsync(productId, artistProfile.ArtistId);
             return StatusCode(result.StatusCode, result);
         }
+
+        [Authorize(Roles = "Customer")]
+        [HttpGet("category/{categoryId}")]
+        public async Task<IActionResult> GetProductsByCategoryIdForCustomer(int categoryId)
+        {
+            var result = await _productService.GetProductsByCategoryIdForCustomerAsync(categoryId);
+            return StatusCode(result.StatusCode, result);
+        }
     }
 }

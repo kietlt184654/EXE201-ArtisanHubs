@@ -137,6 +137,23 @@ namespace ArtisanHubs.Bussiness.Services.Products.Implements
             }
         }
 
-       
+        public async Task<ApiResponse<IEnumerable<ProductForCustomerResponse>>> GetProductsByCategoryIdForCustomerAsync(int categoryId)
+        {
+            try
+            {
+                var products = await _productRepo.GetProductsByCategoryIdAsync(categoryId);
+                if (products == null || !products.Any())
+                {
+                    return ApiResponse<IEnumerable<ProductForCustomerResponse>>.FailResponse("No products found in this category.", 404);
+                }
+                var response = _mapper.Map<IEnumerable<ProductForCustomerResponse>>(products);
+                return ApiResponse<IEnumerable<ProductForCustomerResponse>>.SuccessResponse(response, "Get products successfully.");
+
+            }
+            catch (Exception ex) {
+
+                return ApiResponse<IEnumerable<ProductForCustomerResponse>>.FailResponse($"An error occurred: {ex.Message}", 500);
+            }
+        }
     }
 }
