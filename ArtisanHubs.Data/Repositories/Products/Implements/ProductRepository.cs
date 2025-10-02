@@ -41,5 +41,13 @@ namespace ArtisanHubs.Data.Repositories.Products.Implements
                                  .Include(p => p.Category) // <-- THÊM DÒNG NÀY
                                  .FirstOrDefaultAsync(p => p.ProductId == productId);
         }
+
+        public async Task<IEnumerable<Product>> GetProductsByCategoryIdAsync(int categoryId)
+        {
+           return await _context.Products
+                                 .Include(p => p.Category)
+                                 .Where(p => p.CategoryId == categoryId)
+                                 .ToListAsync();
+        }
     }
 }

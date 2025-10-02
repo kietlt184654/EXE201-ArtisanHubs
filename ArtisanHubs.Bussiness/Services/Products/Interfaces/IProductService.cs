@@ -17,5 +17,6 @@ namespace ArtisanHubs.Bussiness.Services.Products.Interfaces
         Task<ApiResponse<ProductResponse?>> UpdateProductAsync(int productId, int artistId, UpdateProductRequest request);
         Task<ApiResponse<bool>> DeleteProductAsync(int productId, int artistId);
         Task<ApiResponse<ProductForCustomerResponse>> GetProductByIdForCustomerAsync(int productId);
+        Task<ApiResponse<IEnumerable<ProductForCustomerResponse>>> GetProductsByCategoryIdForCustomerAsync(int categoryId);
     }
 }
